@@ -2,17 +2,6 @@
 {% load static %}
 
 {% block title %}Home{% endblock %}
-{% block style %}
-
-
-<link href="{% static 'ruby/style.css' %}" rel="stylesheet">
-<link href="{% static 'ruby/responsive.css' %}" rel="stylesheet">
-<link href="{% static 'ruby/custom.css' %}" rel="stylesheet">
-<link href="{% static 'ruby/bootstrap.min.css' %}" rel="stylesheet">
-
-
-
-{% endblock %}
 
 {% block body %}
 
@@ -412,68 +401,10 @@
 
 
 
-<script src="{% static 'ruby/js/jquery-3.2.1.min.js' %}"></script>
-<script src="{% static 'ruby/js/popper.min.js' %}"></script>
-<script src="{% static 'ruby/js/bootstrap.min.js' %}"></script>
-<script src="{% static 'ruby/js/jquery.superslides.min.js' %}"></script>
-<script src="{% static 'ruby/js/bootstrap-select.js' %}"></script>
-<script src="{% static 'ruby/js/inewsticker.js' %}"></script>
-<script src="{% static 'ruby/js/bootsnav.js.' %}"></script>
-<script src="{% static 'ruby/js/images-loded.min.js' %}"></script>
-<script src="{% static 'ruby/js/isotope.min.js' %}"></script>
-<script src="{% static 'ruby/js/owl.carousel.min.js' %}"></script>
-<script src="{% static 'ruby/js/baguetteBox.min.js' %}"></script>
-<script src="{% static 'ruby/js/form-validator.min.js' %}"></script>
-<script src="{% static 'ruby/js/contact-form-script.js' %}"></script>
-<script src="{% static 'ruby/js/custom.js' %}"></script>
+{% endblock body %}
 
-
-<!-- ALL JS FILES -->
-
-
-
-
-
-<script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}&libraries=places&callback=initAutocomplete" async
-  defer></script>
-
-<script>
-
-  // An autocomplete function that suggests places as the user types from google api
-  function initAutocomplete() {
-    // create a second hidden input to check if the address was suggested by google or not
-    var input = document.getElementById('address');
-    var ginput = document.getElementById('gaddress');
-
-    var autocomplete = new google.maps.places.Autocomplete(input);
-
-    autocomplete.addListener('place_changed', function () {
-
-      var place = autocomplete.getPlace();
-      if (!place.geometry) {
-        input.placeholder = 'Enter a location';
-        return;
-      }
-      input.value = place.name;
-      ginput.value = place.name;
-
-    });
-  }
-  function checkGaddress() {
-    var gaddress = document.getElementById('gaddress');
-    if (gaddress.value === '') {
-      // The gaddress field is empty
-      alert("Please select a valid option from the autocomplete menu.");
-      return false;
-    } else {
-      // The gaddress field is not empty
-      return true;
-    }
-  }
-
-</script>
-
-
-
-
+{% block scripts %}
+  {{ block.super }}
+  <script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}&libraries=places&callback=initAutocomplete" async
+    defer></script>
 {% endblock %}
