@@ -1,6 +1,6 @@
-# Ruby-travelmanager
+# Gather
 
-This is ruby - a Saas application that helps you find out the latest events and celebrations that happen around you or any place around the world. This is a Django application that has all the basic features of any modern application. I am working more on improving and implementing features to this application
+Gather is a SaaS application that helps you find the latest events and celebrations happening around you (or anywhere in the world). It’s a Django application with the core features of a modern web app, with more improvements and features in progress.
 
 ## Features
 
@@ -19,10 +19,11 @@ The following commands helps you to set up this project on your local machine
 Make sure to install [postgis](https://postgis.net/) and pgadmin(optional) 
 Note:  GDAL and postgis installation can vary accouring to your device. red docuumentation to know more..!
 ```sh
-python venv rubyvenv
-rubyenv/Scripts/activate 
+python -m venv gathervenv
+gathervenv/Scripts/activate
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-pip install gdal
+# Note: GDAL wheels are pulled from an alternate wheelhouse (see requirements.txt).
 ```
 
 ## Images
