@@ -1,7 +1,16 @@
 *.env
 bin/
 lib/
-rubyvenv/
+gathervenv/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.pdb
+staticfiles_build/
+*.sqlite3
 *build.sh
 *vercel.json
 images/

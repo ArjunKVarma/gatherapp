@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class RubyConfig(AppConfig):
+class GatherConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'ruby'
+    name = 'gather'

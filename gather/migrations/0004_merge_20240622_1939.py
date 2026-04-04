@@ -6,8 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ruby', '0002_alter_event_time'),
-        ('ruby', '0003_event_time_alter_event_date'),
+        ('gather', '0002_alter_event_time'),
+        ('gather', '0003_event_time_alter_event_date'),
     ]
 
     operations = [

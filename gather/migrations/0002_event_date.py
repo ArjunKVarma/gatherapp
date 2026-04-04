@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ruby', '0001_initial'),
+        ('gather', '0001_initial'),
     ]
 
     operations = [

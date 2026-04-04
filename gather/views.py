@@ -115,7 +115,7 @@ def home(request):
     nearest_point = Event.objects.filter(Q(position__distance_lte=(pnt, D(km=km))) & Q(
         date=datetime.strptime(tdate, '%Y-%m-%d').date()))  # (km=no of kilometers)
 
-    return render(request, "ruby/home.html", {
+    return render(request, "gather/home.html", {
         "lat": request.session['lat'],
         "lng": request.session['lng'],
         "loc": place_name,
@@ -153,7 +153,7 @@ def regevent(request):
             image.save()
             new_evt.images.add(image)
         return HttpResponseRedirect(reverse('home'))
-    return render(request, "ruby/register_event.html", {
+    return render(request, "gather/register_event.html", {
         "API_KEY": settings.GOOGLE_API_KEY
     })
 
@@ -174,7 +174,7 @@ def update_loc(request):
 def ev_details(request, id):
     event = Event.objects.get(id=id)
 
-    return render(request, "ruby/event.html", {
+    return render(request, "gather/event.html", {
         "event": event,
 
     })

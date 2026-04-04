@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ruby', '0002_event_date'),
+        ('gather', '0002_event_date'),
     ]
 
     operations = [

@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                 ('lat', models.FloatField()),
                 ('lng', models.FloatField()),
                 ('category', models.CharField(default='others', max_length=100, verbose_name='')),
-                ('images', models.ManyToManyField(blank=True, to='ruby.image')),
+                ('images', models.ManyToManyField(blank=True, to='gather.image')),
             ],
         ),
     ]
