@@ -39,12 +39,24 @@ ALLOWED_HOSTS = ['*']
 
 # File setting up database
 if os.name == 'nt':
-    # When running without `activate`, `VIRTUAL_ENV` may be missing; fall back to sys.prefix.
-    VENV_BASE = os.environ.get('VIRTUAL_ENV') or sys.prefix
-    os.environ['PATH'] = os.path.join(
-        VENV_BASE, 'Lib\\site-packages\\osgeo') + ';' + os.environ['PATH']
-    os.environ['PROJ_LIB'] = os.path.join(
-        VENV_BASE, 'Lib\\site-packages\\osgeo\\data\\proj') + ';' + os.environ['PATH']
+    try:
+        import osgeo
+        osgeo_dir = os.path.dirname(osgeo.__file__)
+        os.environ['PATH'] = osgeo_dir + ';' + os.environ['PATH']
+        os.environ['PROJ_LIB'] = os.path.join(osgeo_dir, 'data', 'proj') + ';' + os.environ.get('PROJ_LIB', '')
+        
+        import glob
+        # Dynamically set GDAL and GEOS library paths for Django
+        gdal_dlls = glob.glob(os.path.join(osgeo_dir, 'gdal*.dll'))
+        if gdal_dlls:
+            GDAL_LIBRARY_PATH = gdal_dlls[0]
+            
+        geos_dlls = glob.glob(os.path.join(osgeo_dir, 'geos_c*.dll'))
+        if geos_dlls:
+            GEOS_LIBRARY_PATH = geos_dlls[0]
+    except ImportError:
+        print("Warning: osgeo module not found. GDAL/GEOS may not work correctly.")
+        pass
 
 GOOGLE_API_KEY = config('GOOGLE_API_KEY', default='')
 
@@ -117,7 +129,7 @@ WSGI_APPLICATION = 'gathertravel.wsgi.application'
 # that were previously hard-coded for local PostGIS development.
 DATABASE_URL = config(
     'DATABASE_URL',
-    default='postgres://postgres:ajk123@localhost:5432/postgis_gather'
+    default='postgresql://postgres:postgres@localhost:5432/postgis_36_sample'
 )
 _db = dj_database_url.parse(DATABASE_URL)
 _db['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
@@ -159,7 +171,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'gather/static')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'gather/static')]
 STATIC_ROOT = BASE_DIR / "staticfiles_build" / "static"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'gather/media')

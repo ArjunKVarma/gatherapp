@@ -1,160 +1,74 @@
 {% extends "gather/layout.html" %}
 {% load static %}
 
-{% block title %}New Event{% endblock %}
-
-{% block style %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static 'gather/style.css' %}">
-  <link rel="stylesheet" href="{% static 'gather/responsive.css' %}">
-{% endblock %}
+{% block title %}Post an Event{% endblock %}
 
 {% block body %}
-<div class="contact-box-main">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-sm-12">
-        <div class="contact-form-right">
-          <h2>Add new event</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed odio justo, ultrices ac nisl sed, lobortis
-            porta elit. Fusce in metus ac ex venenatis ultricies at cursus mauris.</p>
-
-          <form
-            id="contactForm"
-            action="{% url 'regevent' %}"
-            method="post"
-            onsubmit="return checkGaddress()"
-            enctype="multipart/form-data"
-          >
-            {% csrf_token %}
-
-            <div class="row">
-              <div class="col-md-12">
-                <div class="form-group">
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="event_name"
-                    name="event_name"
-                    placeholder="Event Name"
-                    required
-                    data-error="Please enter your name"
-                  >
-                  <div class="help-block with-errors"></div>
-                </div>
-              </div>
-
-              <div class="col-md-12">
-                <div class="form-group">
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    placeholder="Enter a location"
-                    class="form-control"
-                  >
-                  <input
-                    type="text"
-                    id="gaddress"
-                    name="gaddress"
-                    placeholder="Enter a location"
-                    hidden
-                    required
-                  >
-                  <br>
-                  <div class="help-block with-errors"></div>
-                </div>
-              </div>
-
-              <div class="col-md-12">
-                <div class="form-group">
-                  <div class="row">
-                    <div class="col-12 col-md-4">
-                      <input
-                        class="form-control"
-                        type="date"
-                        id="event_date"
-                        name="event_date"
-                        required
-                        data-error="Please enter Date"
-                      >
-                    </div>
-                    <div class="col-12 col-md-4">
-                      <input
-                        class="form-control"
-                        type="time"
-                        id="event_time"
-                        name="event_time"
-                        required
-                        data-error="Please enter time"
-                      >
-                    </div>
-                    <div class="col-12 col-md-4">
-                      <select class="form-control" id="category" name="category">
-                        <option value="education">Education</option>
-                        <option value="business">Business</option>
-                        <option value="technology">Technology</option>
-                        <option value="music">Music</option>
-                        <option value="sports">Sports</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="help-block with-errors"></div>
-                </div>
-              </div>
-
-              <div class="col-md-12">
-                <div class="form-group">
-                  <input
-                    type="file"
-                    id="images"
-                    name="images"
-                    accept="image/*"
-                    class="form-control"
-                    required
-                    multiple
-                  >
-                  <div class="help-block with-errors"></div>
-                </div>
-              </div>
-
-              <div class="col-md-12">
-                <div class="form-group">
-                  <textarea
-                    class="form-control"
-                    id="description"
-                    name="description"
-                    placeholder="Enter Description"
-                    rows="4"
-                    cols="50"
-                  ></textarea>
-                  <div class="help-block with-errors"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="submit-button text-center">
-              <button class="btn hvr-hover" id="submit" type="submit">Add event</button>
-              <div id="msgSubmit" class="h3 text-center hidden"></div>
-              <div class="clearfix"></div>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div class="col-lg-4 col-sm-12" id="map"></div>
+<section class="hero-section" style="padding-bottom: 60px;">
+    <div class="container">
+        <a href="{% url 'home' %}" class="text-primary mb-3 d-inline-block"><i class="fa fa-arrow-left me-2"></i>Back to Home</a>
+        <h1>Share an <span class="text-primary">experience.</span></h1>
+        <p class="text-muted">Fill in the details to let travelers know what's happening.</p>
     </div>
-  </div>
+</section>
+
+<div class="container" style="margin-top: -30px;">
+    <div class="m3-card p-5 mb-5 shadow-lg border-0" style="border-top: 8px solid var(--royal-blue);">
+        <form action="{% url 'regevent' %}" method="post" enctype="multipart/form-data" onsubmit="return checkGaddress()">
+            {% csrf_token %}
+            
+            <div class="m3-field mb-4">
+                <label class="small fw-bold text-primary mb-2 d-block">EVENT NAME</label>
+                <input type="text" class="m3-input" name="event_name" placeholder="Enter event title" required style="border-radius: var(--radius-sm);">
+            </div>
+
+            <div class="m3-field mb-4">
+                <label class="small fw-bold text-primary mb-2 d-block">LOCATION</label>
+                <div class="position-relative">
+                    <input type="text" id="address" name="address" class="m3-input" placeholder="Where is it happening?" required style="border-radius: var(--radius-sm);">
+                    <input type="text" id="gaddress" name="gaddress" hidden>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4 m3-field mb-4">
+                    <label class="small fw-bold text-primary mb-2 d-block">DATE</label>
+                    <input type="date" class="m3-input" name="event_date" required style="border-radius: var(--radius-sm);">
+                </div>
+                <div class="col-md-4 m3-field mb-4">
+                    <label class="small fw-bold text-primary mb-2 d-block">TIME</label>
+                    <input type="time" class="m3-input" name="event_time" required style="border-radius: var(--radius-sm);">
+                </div>
+                <div class="col-md-4 m3-field">
+                    <label class="small fw-bold text-muted mb-2 d-block">CATEGORY</label>
+                    <select class="m3-input" name="category">
+                        <option value="Music">Music</option>
+                        <option value="Art">Art & Culture</option>
+                        <option value="Food">Food & Drink</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Business">Networking</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="m3-field">
+                <label class="small fw-bold text-muted mb-2 d-block">PHOTOS</label>
+                <input type="file" class="m3-input" name="images" accept="image/*" multiple required>
+                <p class="small text-muted mt-2">You can select multiple photos.</p>
+            </div>
+
+            <div class="m3-field">
+                <label class="small fw-bold text-muted mb-2 d-block">DESCRIPTION</label>
+                <textarea class="m3-input" name="description" rows="5" placeholder="Tell everyone about the event..."></textarea>
+            </div>
+
+            <div id="map" class="mb-4 rounded-4" style="height: 200px; display: none;"></div>
+
+            <button type="submit" class="m3-btn m3-btn-primary w-100 py-3 justify-content-center h5">
+                <i class="fa fa-cloud-upload me-2"></i>Publish Event
+            </button>
+        </form>
+    </div>
 </div>
-{% endblock body %}
-
-{% block scripts %}
-  {{ block.super }}
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}&libraries=places&callback=initAutocomplete"
-    async
-    defer
-  ></script>
 {% endblock %}
-

@@ -1,410 +1,140 @@
 {% extends "gather/layout.html" %}
 {% load static %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Explore Nearby{% endblock %}
 
 {% block body %}
 
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7" data-aos="fade-right">
+                <h1 class="mb-3">Find your next<br><span>adventure.</span></h1>
+                <p class="h5 mb-4" style="opacity: 0.9;">Explore your destination in real-time.</p>
 
-<div class="main-top">
-  <div class="container-fluid">
-    <div class="row justify-content-center">
-      <div class="col-12  col-md-8 ">
-        <form action="{% url 'update_loc' %}" method="post" onsubmit="return checkGaddress()">
-          {% csrf_token %}
-          <div class="search-box">
-            <div class="row">
-              <div class="col-12 col-md-4 mb-2">
-                <input class="form-control" type="text" id="address" name="address" placeholder="{{loc}}">
-              </div>
-              <div>
-                <input type="text" id="gaddress" name="gaddress" placeholder="Enter a location" hidden required>
-              </div>
-              <div class="col-4  col-md-3   ">
-                <input class="form-control" type="number" id="distance" name="distance" placeholder="{{dist}}" required
-                  value="{{dist}}">
-              </div>
-              <div class="col-4  col-md-3  ">
-                <input class="form-control" type="text" id="date" name="date" placeholder="{{date}}" onchange=""
-                  value="{{date}}"  onfocus="(this.type='date')">
-              </div>
-              <div class="col-2">
-                <button class="btn hvr-hover" type="submit">Submit</button>
-              </div>
+                <form action="{% url 'update_loc' %}" method="post" onsubmit="return checkGaddress()"
+                    class="search-container shadow-lg">
+                    {% csrf_token %}
+                    <div class="row g-0 w-100 align-items-center">
+                        <div class="col-12 col-lg-5 d-flex align-items-center border-end-lg py-2">
+                            <div class="search-icon-wrapper"><i class="fa fa-map-marker-alt"></i></div>
+                            <input class="search-input" type="text" id="address" name="address"
+                                placeholder="Location (e.g. {{loc}})">
+                            <input type="text" id="gaddress" name="gaddress" hidden>
+                        </div>
+                        <div class="col-6 col-lg-2 d-flex align-items-center border-end py-2">
+                            <div class="search-icon-wrapper"><i class="fa fa-ruler"></i></div>
+                            <input class="search-input" type="number" name="distance" value="{{dist}}"
+                                style="max-width: 80px;">
+                            <span class="text-muted small fw-bold me-2">KM</span>
+                        </div>
+                        <div class="col-6 col-lg-3 d-flex align-items-center border-end py-2">
+                            <div class="search-icon-wrapper"><i class="fa fa-calendar-alt"></i></div>
+                            <input class="search-input" type="date" name="date" value="{{date}}"
+                                style="font-size: 0.9rem;">
+                        </div>
+                        <div class="col-12 col-lg-2 p-1">
+                            <button class="m3-btn m3-btn-primary w-100 py-3" type="submit" style="font-size: 0.9rem;">
+                                <i class="fa fa-search me-1"></i> SEARCH
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- End Main Top -->
-
-
-<!-- Start Main Top -->
-<header class="main-header">
-  <!-- Start Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light navbar-default bootsnav">
-    <div class="container mt-3 mb-3">
-      <!-- Start Header Navigation -->
-      <div class="navbar-header">
-        <button class="navbar-toggler " type="button" data-toggle="collapse" data-target="#navbar-menu"
-          aria-controls="navbars-rs-food" aria-expanded="false" aria-label="Toggle navigation">
-          <i class="fa fa-bars"></i>
-        </button>
-        <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'gather/images/icon_nb.png' %}" width="150"
-            height="50" class="logo" alt=""></a>
-      </div>
-      <!-- End Header Navigation -->
-
-      <!-- Collect the nav links, forms, and other content for toggling -->
-      <div class="collapse navbar-collapse" id="navbar-menu">
-        <ul class="nav navbar-nav ml-auto" data-in="fadeInDown" data-out="fadeOutUp">
-          <li class="nav-item active"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
-          {% if user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'regevent' %}">New</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
-          {% else %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
-          {% endif %}
-        </ul>
-      </div>
-      <!-- /.navbar-collapse -->
-
-    </div>
-  </nav>
-  <!-- End Navigation -->
-</header>
-<!-- End Main Top -->
-
-
-
-
-<!-- Start Top Search -->
-<div class="top-search">
-  <div class="container">
-    <div class="input-group">
-      <span class="input-group-addon"><i class="fa fa-search"></i></span>
-      <input type="text" class="form-control" placeholder="Search">
-      <span class="input-group-addon close-search"><i class="fa fa-times"></i></span>
-    </div>
-  </div>
-</div>
-<!-- End Top Search -->
-
-
-
-
-<!-- Start Slider -->
-{% if events >= 2 %}
-<div id="slides-shop" class="cover-slides">
-  <ul class="slides-container">
-    {% for event in events %}
-    <li class="text-center">
-      <img src="{{ event.images.first.image.url }}" alt="">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12">
-            <h1 class="m-b-20"><strong>{{ event.name }} at<br> {{event.place_name}}</strong></h1>
-            <p class="m-b-40">On {{ event.date }}</p>
-            <p><a class="btn hvr-hover" href="{% url 'ev_details' id=event.id %}">View More</a></p>
-          </div>
         </div>
-      </div>
-    </li>
-    {% endfor %}
-  </ul>
-  <div class="slides-navigation">
-    <a href="#" class="next"><i class="fa fa-angle-right" aria-hidden="true"></i></a>
-    <a href="#" class="prev"><i class="fa fa-angle-left" aria-hidden="true"></i></a>
-  </div>
-</div>
-{% else %}
-<div id="slides-shop" class="cover-slides">
-  <ul class="slides-container">
-    {% for attraction in attractions|slice:":5" %}
-    {% if "tourist_attraction" in attraction.types %}
-    <li class="text-center">
-      <img
-        src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={{ attraction.image_url }}&key={{API_KEY}}"
-        alt="">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12">
-            <h1 class="m-b-20"><strong>{{ attraction.name }}</strong></h1>
-
-            <p><a class="btn hvr-hover" href="https://maps.google.com/?q=place_id:{{attraction.place_id}}">View More</a>
-            </p>
-          </div>
-        </div>
-      </div>
-    </li>
-    {% endif %}
-    {% endfor %}
-  </ul>
-  <div class="slides-navigation">
-    <a href="#" class="next"><i class="fa fa-angle-right" aria-hidden="true"></i></a>
-    <a href="#" class="prev"><i class="fa fa-angle-left" aria-hidden="true"></i></a>
-  </div>
-</div>
-{% endif %}
-<!-- End Slider -->
-
-
-<!-- Start Events  -->
-
-{% if events %}
-<div class="latest-Events">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="title-all text-center">
-          <h1>Latest Events</h1>
-          <p>Newly added events. Dont miss your opportunities to participate!</p>
-        </div>
-      </div>
     </div>
-
-    <div class="row  events owl-carousel owl-theme" style="margin: auto;">
-      {% for event in events %}
-      <div class="item">
-        <div class="Events-box" style="flex: 1; margin: 10px;">
-          <div class="Events-img" style="width: 100%; height: 150px; overflow: hidden;">
-            <img class="img-fluid" src="{{ event.images.first.image.url }}" alt=""
-              style="width: 100%; height: 100%; object-fit: cover;" />
-          </div>
-
-          <div class="Events-content">
-            <div class="title-Events">
-              <a href="{% url 'ev_details' id=event.id %}">
-                <h3>{{ event.name }}</h3>
-              </a>
-              <p>{{event.description|linebreaksbr|slice:":300" }}</p>
-            </div>
-
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</div>
+</section>
 
 <div class="container">
-  <div class="row my-5">
-    <div class="col-lg-12">
-      <div class="title-all text-center">
-        <h1>Featured Events</h1>
-        <p>Top events you can't miss!</p>
-      </div>
-      <div class="featured-products-box owl-carousel owl-theme">
 
-        {% for event in events %}
-        <div class="item">
-          <div class="products-single fix">
-            <div class="box-img-hover">
-              <img src="{{ event.images.first.image.url }}" class="img-fluid" alt="Image">
-              <div class="mask-icon p-3" style="color: rgb(160, 160, 160); ">
-                <h5>{{event.category}}</h5>
-                <h6>Date: {{event.date}}</h6>
-                <h6>Time: {{event.time}}</h6>
-              </div>
-            </div>
-            <div class="why-text">
-              <h4>{{ event.name }}</h4>
-              <p><a class="btn hvr-hover" href="{% url 'ev_details' id=event.id %}"
-                  style="text-decoration: none; color: rgb(255, 255, 255);">View More</a></p>
-            </div>
-          </div>
+    <!-- Happening Now -->
+    {% if events %}
+    <section data-aos="fade-up">
+        <div class="section-title">
+            <h2 class="text-uppercase">Happening Now</h2>
+            <p class="text-muted">Live events in your current area</p>
         </div>
-        {% endfor %}
+        <div class="row g-4">
+            {% for event in events %}
+            <div class="col-12 col-md-6 col-lg-4" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:100 }}">
+                <div class="m3-card">
+                    <div class="card-image-container">
+                        {% if event.images.exists %}
+                        <img src="{{ event.images.first.image.url }}" alt="{{ event.name }}">
+                        {% else %}
+                        <div class="img-placeholder"
+                            style="height: 100%; background: #eee; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-image fa-2x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-badge">{{ event.category }}</div>
+                    </div>
+                    <div class="card-content p-4">
+                        <h4 class="mb-2"><a href="{% url 'ev_details' id=event.id %}">{{ event.name }}</a></h4>
+                        <div class="d-flex text-muted small fw-bold">
+                            <span class="me-3"><i class="fa fa-clock me-1 text-primary"></i>{{ event.time }}</span>
+                            <span><i class="fa fa-calendar me-1 text-primary"></i>{{ event.date|date:"D, d M" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 
-      </div>
-    </div>
-  </div>
+    <!-- Map Discovery -->
+    <section data-aos="fade-up">
+        <div class="section-title">
+            <h2 class="text-uppercase">Map Discovery</h2>
+            <p class="text-muted">Visualize nearby attractions</p>
+        </div>
+        <div class="m3-card shadow-sm border-0"
+            style="height: 400px; border-radius: var(--radius-lg); overflow: hidden;">
+            {{ map|safe }}
+        </div>
+    </section>
+
+    <!-- Popular Places -->
+    <section id="explore" data-aos="fade-up">
+        <div class="section-title">
+            <h2 class="text-uppercase">Popular Places</h2>
+            <p class="text-muted">Curated local interests for you</p>
+        </div>
+
+        <div class="chip-group special-menu filter-button-group mb-4" data-aos="fade-right">
+            <button class="chip active" data-filter="*">All</button>
+            <button class="chip" data-filter=".tourist_attraction">Attractions</button>
+            <button class="chip" data-filter=".Dining">Dining</button>
+            <button class="chip" data-filter=".Movies">Movies</button>
+            <button class="chip" data-filter=".gym">GYM</button>
+            <button class="chip" data-filter=".worship">Worship</button>
+        </div>
+
+        <div class="row special-list g-4">
+            {% for attraction in attractions %}
+            <div class="col-12 col-md-6 col-lg-4 special-grid {{ attraction.category_class }}" data-aos="fade-up"
+                data-aos-delay="{{ forloop.counter|add:50 }}">
+                <div class="m3-card p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h4 class="mb-1">{{ attraction.name }}</h4>
+                            <span class="badge bg-active px-3 py-2" style="font-size: 0.7rem;">{{ attraction.category
+                                }}</span>
+                        </div>
+                        <div class="text-primary fw-bold">{{ attraction.distance }}km</div>
+                    </div>
+                    <a href="https://www.openstreetmap.org/?mlat={{ attraction.lat }}&mlon={{ attraction.lng }}&zoom=15"
+                        target="_blank" class="m3-btn m3-btn-primary w-100 text-center py-2" style="font-size: 0.8rem;">
+                        <i class="fa fa-location-arrow me-2"></i> EXPLORE
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
 </div>
-<!-- End Events  -->
-{% endif %}
-
-
-
-
-
-<!-- Start Products  -->
-<div class="products-box">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="title-all text-center">
-          <h1>Nearby Places</h1>
-          <p>Explore more around and find out your intrests</p>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="special-menu text-center">
-          <div class="button-group filter-button-group">
-            <button class="active" data-filter="*">All</button>
-            <button data-filter="tourist_attraction">Attractions</button>
-            <button data-filter=".Movies">Movies</button>
-            <button data-filter=".Cafe">Cafe</button>
-            <button data-filter=".gym">GYM</button>
-            <button data-filter=".hindu_temple">Temples</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row special-list">
-
-      {% for attraction in attractions %}
-      {% if "tourist_attraction" in attraction.types %}
-      <div class="col-lg-3 col-md-6 special-grid Movies">
-        <div class="products-single fix">
-          <div class="box-img-hover">
-
-            <img style=" object-fit: cover;background-size: cover;"
-              src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={{ attraction.image_url }}&key={{API_KEY}}"
-              class="img-fluid" alt="Image">
-            <div class="mask-icon">
-
-              <a class="cart" href="https://maps.google.com/?q=place_id:{{attraction.place_id}}">View more</a>
-            </div>
-          </div>
-          <div class="why-text">
-            <h4>{{ attraction.name }}</h4>
-            <h5> {{attraction.rating}}</h5>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-      {% if "movie_theater" in attraction.types %}
-      <div class="col-lg-3 col-md-6 special-grid Movies">
-        <div class="products-single fix">
-          <div class="box-img-hover">
-
-            <img style=" object-fit: cover;background-size: cover;"
-              src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={{ attraction.image_url }}&key={{API_KEY}}"
-              class="img-fluid" alt="Image">
-            <div class="mask-icon">
-
-              <a class="cart" href="https://maps.google.com/?q=place_id:{{attraction.place_id}}">View more</a>
-            </div>
-          </div>
-          <div class="why-text">
-            <h4>{{ attraction.name }}</h4>
-            <h5> {{attraction.rating}}</h5>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-      {% if "cafe" in attraction.types %}
-      <div class="col-lg-3 col-md-6 special-grid Cafe">
-        <div class="products-single fix">
-          <div class="box-img-hover">
-
-            <img style=" object-fit: cover;background-size: cover;"
-              src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={{ attraction.image_url }}&key={{API_KEY}}"
-              class="img-fluid" alt="Image">
-            <div class="mask-icon">
-
-              <a class="cart" href="https://maps.google.com/?q=place_id:{{attraction.place_id}}">View more</a>
-            </div>
-          </div>
-          <div class="why-text">
-            <h4>{{ attraction.name }}</h4>
-            <h5> {{attraction.rating}}</h5>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-      {% if "gym" in attraction.types %}
-      <div class="col-lg-3 col-md-6 special-grid gym">
-        <div class="products-single fix">
-          <div class="box-img-hover">
-
-            <img style=" object-fit: cover;background-size: cover;"
-              src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={{ attraction.image_url }}&key={{API_KEY}}"
-              class="img-fluid" alt="Image">
-            <div class="mask-icon">
-
-              <a class="cart" href="https://maps.google.com/?q=place_id:{{attraction.place_id}}">View more</a>
-            </div>
-          </div>
-          <div class="why-text">
-            <h4>{{ attraction.name }}</h4>
-            <h5> {{attraction.rating}}</h5>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-      {% if "hindu_temple" in attraction.types %}
-      <div class="col-lg-3 col-md-6 special-grid hindu_temple">
-        <div class="products-single fix">
-          <div class="box-img-hover">
-
-            <img style=" object-fit: cover;background-size: cover;"
-              src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={{ attraction.image_url }}&key={{API_KEY}}"
-              class="img-fluid" alt="Image">
-            <div class="mask-icon">
-
-              <a class="cart" href="https://maps.google.com/?q=place_id:{{attraction.place_id}}">View more</a>
-            </div>
-          </div>
-          <div class="why-text">
-            <h4>{{ attraction.name }}</h4>
-            <h5> {{attraction.rating}}</h5>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
-      {% endfor %}
-
-
-
-    </div>
-  </div>
-</div>
-<!-- End Products  -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- Start Footer  -->
-<footer>
-  <div class="footer-main">
-    <div class="container">
-      <h4>Gather: Discover Nearby Locations and Events</h4>
-    <p style="font-size: large;">
-      We are your go-to travel companion. Whether you’re a local looking to make a trip or a traveler seeking
-      authentic experiences, our service has you covered. Explore nearby attractions and
-      stay informed about exciting events happening right around the corner. <br></p>
-      <p style="font-weight: lighter;">© 2024 Gather | Your travel partner</p>
-    </div>
-  </div>
-</footer>
-<!-- End Footer  -->
-
-
-
-
 
 {% endblock body %}
-
-{% block scripts %}
-  {{ block.super }}
-  <script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}&libraries=places&callback=initAutocomplete" async
-    defer></script>
-{% endblock %}

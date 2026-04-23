@@ -1,150 +1,139 @@
 /**
- * Consolidated Main JS for Ruby Travel Manager
- * Cleaned from custom.js | Essential functionality only | jQuery dependent
+ * Gather Modern Sharp JS
+ * Palette: Royal Blue & Active Green
  */
 
 (function ($) {
   'use strict';
 
-  // Loader (remove preloader if present)
+  // 1. Isotope Filtering for Nearby Places
   $(window).on('load', function () {
-    $('.preloader, #preloader').fadeOut('slow');
-    $('body').css('overflow', 'visible');
-  });
+    if ($('.special-list').length) {
+      $('.special-list').imagesLoaded(function() {
+        var $grid = $('.special-list').isotope({
+          itemSelector: '.special-grid',
+          layoutMode: 'fitRows'
+        });
 
-  // Fixed Navbar on Scroll
-  $(window).on('scroll', function () {
-    if ($(this).scrollTop() > 50) {
-      $('.main-header').addClass('fixed-menu');
-    } else {
-      $('.main-header').removeClass('fixed-menu');
+        $('.filter-button-group .chip').click(function () {
+          $(this).addClass('active').siblings().removeClass('active');
+          var filterValue = $(this).attr('data-filter');
+          $grid.isotope({ filter: filterValue });
+          
+          // Trigger AOS refresh after filter
+          if (window.AOS) AOS.refresh();
+        });
+      });
     }
-
-    // Back to Top
-    if ($(this).scrollTop() > 100) {
-      $('#back-to-top').fadeIn();
-    } else {
-      $('#back-to-top').fadeOut();
-    }
   });
 
-  $('#back-to-top').click(function () {
-    $('html, body').animate({ scrollTop: 0 }, 600);
-    return false;
-  });
-
-  // Isotope Filters (Nearby Places)
-  $('.container').imagesLoaded(function () {
-    var $grid = $('.special-list').isotope({
-      itemSelector: '.special-grid'
-    });
-
-    $('.special-menu button').click(function () {
+  // 2. Navigation Active States
+  const currentPath = window.location.pathname;
+  $('.bottom-nav .nav-item, .desktop-nav a').each(function() {
+    const linkPath = $(this).attr('href');
+    if (linkPath === currentPath) {
       $(this).addClass('active').siblings().removeClass('active');
-      var filterValue = $(this).attr('data-filter');
-      $grid.isotope({ filter: filterValue });
-    });
-  });
-
-  // Owl Carousels
-  $('.featured-products-box, .events').owlCarousel({
-    loop: true,
-    margin: 15,
-    dots: false,
-    autoplay: true,
-    autoplayTimeout: 3000,
-    autoplayHoverPause: true,
-    navText: ["<i class='fas fa-arrow-left'></i>", "<i class='fas fa-arrow-right'></i>"],
-    responsive: {
-      0: { items: 1, nav: true },
-      600: { items: 2, nav: true },
-      1000: { items: 3, nav: true }
     }
   });
 
-  // Tooltips
-  $('[data-bs-toggle="tooltip"]').tooltip();
-
-  // Slider Range (if used)
-  if ($('#slider-range').length) {
-    $('#slider-range').slider({
-      range: true,
-      min: 0,
-      max: 4000,
-      values: [1000, 3000],
-      slide: function (event, ui) {
-        $('#amount').val('$' + ui.values[0] + ' - $' + ui.values[1]);
-      }
-    });
-    $('#amount').val('$' + $('#slider-range').slider('values', 0) + ' - $' + $('#slider-range').slider('values', 1));
-  }
-
-  // NiceScroll (brand-box if present)
-  if ($('.brand-box').length) {
-    $('.brand-box').niceScroll({
-      cursorcolor: '#9b9b9c'
-    });
-  }
+  // 3. Scroll Header Effect
+  $(window).scroll(function() {
+    if ($(this).scrollTop() > 30) {
+      $('#mainHeader').css({
+        'height': '60px',
+        'border-bottom-width': '4px'
+      });
+    } else {
+      $('#mainHeader').css({
+        'height': '70px',
+        'border-bottom-width': '2px'
+      });
+    }
+  });
 
 })(jQuery);
 
-// Google Places autocomplete + form validation
-// Used by pages with `#address` (text input) and `#gaddress` (hidden input).
+/**
+ * OpenStreetMap Nominatim Autocomplete - Refined Sharp Look
+ */
 (function () {
   'use strict';
 
   function setupAutocomplete() {
-    if (typeof google === 'undefined' || !google.maps || !google.maps.places) return;
+    const input = document.getElementById('address');
+    const ginput = document.getElementById('gaddress');
+    if (!input) return;
 
-    var input = document.getElementById('address');
-    var ginput = document.getElementById('gaddress');
-    if (!input || !ginput) return;
+    if (input.dataset.autocompleteBound === 'true') return;
+    input.dataset.autocompleteBound = 'true';
 
-    // Avoid double-binding if callback fires more than once.
-    if (input.dataset && input.dataset.autocompleteBound === 'true') return;
-    if (input.dataset) input.dataset.autocompleteBound = 'true';
+    const dropdown = document.createElement('div');
+    dropdown.className = 'shadow-lg border-0';
+    dropdown.style.cssText = 'position:absolute;z-index:9999;background:#ffffff;border-top:4px solid #28a745;margin-top:5px;padding:0;width:100%;max-height:300px;overflow-y:auto;display:none;box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;';
+    input.parentNode.style.position = 'relative';
+    input.parentNode.appendChild(dropdown);
 
-    var autocomplete = new google.maps.places.Autocomplete(input);
-    autocomplete.addListener('place_changed', function () {
-      var place = autocomplete.getPlace();
-      if (!place || !place.geometry) {
-        input.placeholder = 'Enter a location';
-        return;
-      }
+    let debounceTimer;
+    input.addEventListener('input', function () {
+      clearTimeout(debounceTimer);
+      const q = this.value.trim();
+      if (q.length < 3) { dropdown.style.display = 'none'; return; }
+      
+      debounceTimer = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(q)}`, {
+          headers: { 'Accept-Language': 'en' }
+        })
+        .then(r => r.json())
+        .then(results => {
+          dropdown.innerHTML = '';
+          if (!results.length) { dropdown.style.display = 'none'; return; }
+          
+          results.forEach(place => {
+            const item = document.createElement('div');
+            item.className = 'p-3 border-bottom';
+            item.style.cssText = 'cursor:pointer;transition:background 0.2s;font-size:14px;color:#172b4d !important;background:#ffffff;';
+            item.innerHTML = `<i class="fa fa-location-dot text-primary me-2"></i> <strong style="color:#172b4d !important;">${place.display_name}</strong>`;
+            
+            item.addEventListener('mouseenter', () => {
+              item.style.background = '#e6efff';
+              item.style.color = '#0052cc';
+            });
+            item.addEventListener('mouseleave', () => {
+              item.style.background = '#ffffff';
+              item.style.color = '#172b4d';
+            });
+            
+            item.addEventListener('mousedown', (e) => {
+              e.preventDefault();
+              input.value = place.display_name;
+              if (ginput) ginput.value = place.display_name;
+              dropdown.style.display = 'none';
+            });
+            dropdown.appendChild(item);
+          });
+          dropdown.style.display = 'block';
+        })
+        .catch(() => { dropdown.style.display = 'none'; });
+      }, 400);
+    });
 
-      // Keep compatibility with existing backend expecting a string.
-      input.value = place.name || '';
-      ginput.value = place.name || '';
-
-      // If this page has a map container, show a marker.
-      var mapEl = document.getElementById('map');
-      if (!mapEl) return;
-
-      var location = place.geometry.location;
-      var center = { lat: location.lat(), lng: location.lng() };
-
-      var map = new google.maps.Map(mapEl, { center: center, zoom: 15 });
-      new google.maps.Marker({ position: center, map: map });
+    input.addEventListener('blur', () => {
+      setTimeout(() => { dropdown.style.display = 'none'; }, 200);
     });
   }
 
-  window.initAutocomplete = function initAutocomplete() {
-    // Google callback should run after the API is ready; still guard for DOM state.
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', setupAutocomplete, { once: true });
-      return;
-    }
-    setupAutocomplete();
-  };
-
-  window.checkGaddress = function checkGaddress() {
-    var gaddress = document.getElementById('gaddress');
-    if (!gaddress) return true; // page does not use the hidden field
-    if (gaddress.value === '') {
-      alert('Please select a valid option from the autocomplete menu.');
-      return false;
+  window.checkGaddress = function() {
+    const gaddress = document.getElementById('gaddress');
+    const address = document.getElementById('address');
+    if (gaddress && address && gaddress.value === '' && address.value !== '') {
+      gaddress.value = address.value;
     }
     return true;
   };
-})();
 
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAutocomplete);
+  } else {
+    setupAutocomplete();
+  }
+})();

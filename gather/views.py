@@ -14,27 +14,43 @@ from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 import requests
 from django.contrib.auth.models import User
+from .osm_utils import find_nearby_places, create_map, reverse_geocode, geocode_address
 # Create your views here.
 
 
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
-        # Ensure password matches confirmation
         password = request.POST["password"]
+        role = request.POST.get("role", "user")
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, password)
+            user = User.objects.create_user(username=username, password=password)
             user.save()
+
+            # Profile is automatically created by signal, now update it
+            user.profile.role = role
+            if role == 'editor':
+                user.profile.is_approved = False
+            user.profile.save()
+
         except IntegrityError:
             return render(request, "registration/register.html", {
                 "message": "Username already taken."
             })
+
+        if role == 'editor':
+            return render(request, "registration/login.html", {
+                "message": "Registration successful! Your editor account is now under review. We will notify you once approved.",
+                "msg_class": "m3-alert-info"
+            })
+
         login(request, user)
         return HttpResponseRedirect(reverse("home"))
     else:
         return render(request, 'registration/register.html')
+
 
 
 def sign_in(request):
@@ -47,14 +63,23 @@ def sign_in(request):
 
         # Check if authentication successful
         if user is not None:
+            # Check editor approval status
+            if hasattr(user, 'profile') and user.profile.role == 'editor' and not user.profile.is_approved:
+                return render(request, "registration/login.html", {
+                    "message": "Your editor account is currently under review. We will notify you once it's approved.",
+                    "msg_class": "m3-alert"
+                })
+
             login(request, user)
             return HttpResponseRedirect(reverse("home"))
         else:
             return render(request, "registration/login.html", {
-                "message": "Invalid username and/or password."
+                "message": "Invalid username and/or password.",
+                "msg_class": "m3-alert"
             })
     else:
         return render(request, "registration/login.html")
+
 
 
 def signout(request):
@@ -75,45 +100,18 @@ def home(request):
     km = request.session.get('km')
     tdate = request.session.get('date')
 
-    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
-    params = {
-        "location": f"{lat},{lng}",
-        "radius": int(km) * 1000,
-
-        "rating": 2,
-        "key": f"{settings.GOOGLE_API_KEY}"
-    }
-    types = ["amusement_park", "movie_theater", "bowling_alley", "cafe", "casino", "hindu_temple", "library", "mosque",
-             "museum", "night_club", "park", "restaurant", "spa", "shopping_mall", "stadium", "tourist_attraction", "zoo"]
-
-    response = requests.get(url, params=params)
-    data = response.json()
-
-    places = []
-
-    for type in types:
-        params["types"] = type
-        response = requests.get(url, params=params)
-        data = response.json()
-        for result in data['results']:
-            if 'photos' in result:
-                place = {
-                    'name': result['name'],
-                    'image_url': result['photos'][0]['photo_reference'],
-                    'types': result['types'],
-                    'rating': result.get('rating', 0),
-                    'tot_ratings': result.get('user_ratings_total', 0),
-                    'place_id': result['place_id']
-                }
-                places.append(place)
-    places.sort(key=lambda x: x['tot_ratings'], reverse=True)
-    g = geocoder.google([lat, lng], method='reverse')
-    place_name = g.city
-
-    pnt = Point(request.session.get('lat'),
-                request.session.get('lng'), srid=4326)
-    nearest_point = Event.objects.filter(Q(position__distance_lte=(pnt, D(km=km))) & Q(
+    # Find nearby places using OpenStreetMap
+    places = find_nearby_places(float(lat), float(lng), int(km))
+    
+    # Get place name using OpenStreetMap reverse geocoding
+    place_name = reverse_geocode(float(lat), float(lng))
+    pnt = Point(float(request.session.get('lng')),
+                float(request.session.get('lat')), srid=4326)
+    nearest_point = Event.objects.filter(Q(position__distance_lte=(pnt, D(km=float(km)))) & Q(
         date=datetime.strptime(tdate, '%Y-%m-%d').date()))  # (km=no of kilometers)
+
+    # Create interactive map
+    map_html = create_map(float(lat), float(lng), places)
 
     return render(request, "gather/home.html", {
         "lat": request.session['lat'],
@@ -122,16 +120,19 @@ def home(request):
         "date": tdate,
         "dist": km,
         "events": nearest_point,
-        "API_KEY": settings.GOOGLE_API_KEY,
         "attractions": places,
-
+        "map": map_html,
     })
 
 
 @login_required(login_url='/login')
-@login_required(login_url='/login')
 def regevent(request):
+    # Check if user is an approved editor or admin
+    if not (request.user.is_staff or (hasattr(request.user, 'profile') and request.user.profile.role == 'editor' and request.user.profile.is_approved)):
+        return HttpResponseRedirect(reverse('home'))
+
     if request.method == 'POST':
+
         new_evt = Event()
         new_evt.name = request.POST['event_name']
         new_evt.place_name = request.POST['address']
@@ -140,11 +141,17 @@ def regevent(request):
         new_evt.time = request.POST['event_time']
         new_evt.category = request.POST['category']
         images = request.FILES.getlist('images')
-        g = geocoder.google(new_evt.place_name)
-        new_evt.lat = g.lat
-        new_evt.lng = g.lng
-        print(images)
-        new_evt.position = "POINT({} {})".format(g.lat, g.lng)
+        # Use OpenStreetMap Nominatim for geocoding
+        lat, lng = geocode_address(new_evt.place_name)
+        if lat and lng:
+            new_evt.lat = lat
+            new_evt.lng = lng
+            new_evt.position = f"POINT({lng} {lat})"
+        else:
+            # Default coordinates if geocoding fails
+            new_evt.lat = 28.63576000
+            new_evt.lng = 77.22445000
+            new_evt.position = "POINT(77.22445000 28.63576000)"
 
         new_evt.save()
 
@@ -153,19 +160,25 @@ def regevent(request):
             image.save()
             new_evt.images.add(image)
         return HttpResponseRedirect(reverse('home'))
-    return render(request, "gather/register_event.html", {
-        "API_KEY": settings.GOOGLE_API_KEY
-    })
+    return render(request, "gather/register_event.html")
 
 
-@login_required(login_url='/login')
 def update_loc(request):
-    address = request.POST['gaddress']
-    km = request.POST['distance']
-    date = request.POST['date']
-    g = geocoder.google(address)
-    request.session['lat'] = g.lat
-    request.session['lng'] = g.lng
+    # Use gaddress (picked from autocomplete) or fall back to raw typed address
+    address = request.POST.get('gaddress') or request.POST.get('address') or ''
+    
+    raw_km = request.POST.get('distance')
+    km = raw_km if raw_km and str(raw_km).strip() else 20
+    
+    raw_date = request.POST.get('date')
+    date = raw_date if raw_date and str(raw_date).strip() else datetime.now().strftime('%Y-%m-%d')
+
+    if address.strip():
+        # Use OpenStreetMap Nominatim for geocoding
+        lat, lng = geocode_address(address)
+        if lat and lng:
+            request.session['lat'] = lat
+            request.session['lng'] = lng
     request.session['km'] = km
     request.session['date'] = date
     return HttpResponseRedirect(reverse('home'))
