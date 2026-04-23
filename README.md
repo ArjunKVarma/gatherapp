@@ -64,11 +64,11 @@ python manage.py runvserver
 ```
 
 ## 🖼 Preview
-<img src="https://github.com/ArjunKVarma/ruby-travelmanager/blob/main/images/home.png" alt="Home image" width="500"/>
-<img src="https://github.com/ArjunKVarma/ruby-travelmanager/blob/main/images/fetd.png" alt="Featured" width="500"/>
+<img src="images/home.png" alt="Home image" width="500"/>
+<img src="images/fetd.png" alt="Events image" width="500"/>
 
 ---
-*Front-End Design inspired by modern Material Design principles with sharp, professional aesthetics.*
+
 
 ## License
 MIT
